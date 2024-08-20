@@ -15,7 +15,7 @@
 
   export enum CaptchaTheme {
     DARK = 'dark',
-    LIGHT = 'light',
+    LIGHT = 'light'
   }
 </script>
 
@@ -52,7 +52,7 @@
   const query = new URLSearchParams({
     recaptchacompat: reCaptchaCompat ? 'on' : 'off',
     onload: 'hcaptchaOnLoad',
-    render: 'explicit',
+    render: 'explicit'
   });
   const scriptSrc = `${apihost}?${query.toString()}`;
 
@@ -72,9 +72,9 @@
         });
       };
 
-      window.onError = () => {
-        dispatch('error');
-      };
+    window.onError = () => {
+      dispatch('error');
+    };
 
       window.onClose = () => {
         dispatch('close');
@@ -108,7 +108,7 @@
       'error-callback': 'onError',
       'close-callback': 'onClose',
       'expired-callback': 'onExpired',
-      size,
+      size
     });
   }
 </script>
