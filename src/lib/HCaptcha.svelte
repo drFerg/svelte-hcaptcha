@@ -21,7 +21,14 @@
 
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    load: null;
+    mount: null;
+    error: null;
+    close: null;
+    success: { token: string };
+    expired: null;
+  }>();
 
   export let sitekey: string;
   export let apihost: string = 'https://js.hcaptcha.com/1/api.js';
