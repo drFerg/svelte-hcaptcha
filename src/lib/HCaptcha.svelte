@@ -2,8 +2,8 @@
   declare global {
     interface Window {
       sitekey: string;
-      hcaptchaOnLoad: Function;
-      onSuccess: Function;
+      hcaptchaOnLoad: Function | null;
+      onSuccess: Function | null;
       onError: Function;
       onClose: Function;
       onExpired: Function;
@@ -20,10 +20,7 @@
 </script>
 
 <script lang="ts">
-  import { onDestroy, createEventDispatcher, onMount } from 'svelte';
-  // @ts-ignore
-  const browser = import.meta.env.SSR === undefined ? true : !import.meta.env.SSR;
-
+  import { createEventDispatcher, onMount } from 'svelte';
   const dispatch = createEventDispatcher();
 
   export let sitekey: string;
@@ -37,7 +34,7 @@
     if (mounted && loaded && widgetID) hcaptcha.reset(widgetID);
   };
 
-  export const execute = (options) => {
+  export const execute = (options: any) => {
     if (mounted && loaded && widgetID) return hcaptcha.execute(widgetID, options);
   };
 
@@ -46,7 +43,7 @@
 
   let mounted = false;
   let loaded = false;
-  let widgetID;
+  let widgetID: string;
 
   // construct the script tag for hCaptcha remote resources
   const query = new URLSearchParams({
@@ -54,49 +51,41 @@
     onload: 'hcaptchaOnLoad',
     render: 'explicit'
   });
-  const scriptSrc = `${apihost}?${query.toString()}`;
 
   onMount(() => {
-    if (browser && !sitekey) sitekey = window.sitekey;
+    if (!sitekey) sitekey = window.sitekey;
 
-    if (browser) {
-      window.hcaptchaOnLoad = () => {
-        // consumers can attach custom on:load handlers
-        dispatch('load');
-        loaded = true;
-      };
+    window.hcaptchaOnLoad = () => {
+      // consumers can attach custom on:load handlers
+      dispatch('load');
+      loaded = true;
+    };
 
-      window.onSuccess = (token) => {
-        dispatch('success', {
-          token: token,
-        });
-      };
+    window.onSuccess = (token: string) => {
+      dispatch('success', { token });
+    };
 
     window.onError = () => {
       dispatch('error');
     };
 
-      window.onClose = () => {
-        dispatch('close');
-      };
-      
-      window.onExpired = () => {
-        dispatch('expired');
-      };
-    }
+    window.onClose = () => {
+      dispatch('close');
+    };
+
+    window.onExpired = () => {
+      dispatch('expired');
+    };
 
     dispatch('mount');
     mounted = true;
-  });
-
-  onDestroy(() => {
-    if (browser) {
+    return () => {
       window.hcaptchaOnLoad = null;
       window.onSuccess = null;
-    }
-    // guard against script loading race conditions
-    // i.e. if component is destroyed before hcaptcha reference is loaded
-    if (loaded) hcaptcha = null;
+      // guard against script loading race conditions
+      // i.e. if component is destroyed before hcaptcha reference is loaded
+      if (loaded) hcaptcha = null;
+    };
   });
 
   $: if (mounted && loaded) {
@@ -115,7 +104,7 @@
 
 <svelte:head>
   {#if mounted && !window?.hcaptcha}
-    <script src={scriptSrc} async defer></script>
+    <script src={`${apihost}?${query}`} async defer></script>
   {/if}
 </svelte:head>
 
