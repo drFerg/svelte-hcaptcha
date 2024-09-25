@@ -87,6 +87,8 @@
     dispatch('mount');
     mounted = true;
     return () => {
+      hcaptcha.reset(widgetID);
+      hcaptcha.remove(widgetID);
       window.hcaptchaOnLoad = null;
       window.onSuccess = null;
       // guard against script loading race conditions
